@@ -1,0 +1,31 @@
+import type { Metadata } from 'next';
+import './globals.css';
+import { siteConfig } from '@/config/site';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import WhatsAppFab from '@/components/WhatsAppFab';
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.siteUrl),
+  title: { default: 'BNS Prestige — Location de voitures sportives à Bruxelles', template: '%s · BNS Prestige' },
+  description: 'Louez une Audi RS3 ou une Golf 8 GTI Clubsport à Bruxelles. Choisissez vos dates, envoyez votre demande, confirmation par WhatsApp.',
+  openGraph: { title: 'BNS Prestige', description: 'Location de voitures sportives à Bruxelles.', type: 'website', locale: 'fr_BE' },
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="fr">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+      </head>
+      <body>
+        <Header />
+        <main>{children}</main>
+        <Footer />
+        <WhatsAppFab />
+      </body>
+    </html>
+  );
+}
