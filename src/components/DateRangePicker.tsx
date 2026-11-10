@@ -1,21 +1,19 @@
 'use client';
 import { useMemo, useState } from 'react';
-import type { DateRange } from '@/lib/types';
+import type { Slot } from '@/lib/types';
 import { fromISO, toISO } from '@/lib/dates';
 
-type Props = {
-  start: string | null; end: string | null; blocked: DateRange[];
-  onChange: (start: string | null, end: string | null) => void;
-};
+type Props = { start: string | null; end: string | null; slots: Slot[]; onChange: (start: string | null, end: string | null) => void };
 const DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const nextDay = (iso: string) => { const d = fromISO(iso); d.setDate(d.getDate() + 1); return toISO(d); };
 
-export default function DateRangePicker({ start, end, blocked, onChange }: Props) {
+export default function DateRangePicker({ start, end, slots, onChange }: Props) {
   const today = toISO(new Date());
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
 
-  // Une location occupe les jours [début, fin[ : le jour de retour reste libre pour un nouveau départ.
-  const isBlocked = (iso: string) => blocked.some((r) => iso >= r.start_date && iso < r.end_date);
-  const overlaps = (a: string, b: string) => blocked.some((r) => a < r.end_date && b > r.start_date);
+  // Jour entièrement pris : aucune heure possible. Jour partiel : sélectionnable, les heures sont vérifiées ensuite.
+  const fullyBlocked = (iso: string) => slots.some((s) => s.start_local <= `${iso}T00:00` && s.end_local >= `${iso}T23:59`);
+  const partlyBlocked = (iso: string) => slots.some((s) => s.start_local < `${nextDay(iso)}T00:00` && s.end_local > `${iso}T00:00`);
 
   const cells = useMemo(() => {
     const first = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -25,9 +23,8 @@ export default function DateRangePicker({ start, end, blocked, onChange }: Props
   }, [month]);
 
   function pick(iso: string) {
-    if (!start || (start && end)) { if (!isBlocked(iso) && iso >= today) onChange(iso, null); return; }
-    if (iso <= start) { if (!isBlocked(iso) && iso >= today) onChange(iso, null); return; }
-    if (overlaps(start, iso)) { onChange(isBlocked(iso) ? null : iso, null); return; }
+    if (fullyBlocked(iso) || iso < today) return;
+    if (!start || end || iso <= start) { onChange(iso, null); return; }
     onChange(start, iso);
   }
 
@@ -47,21 +44,21 @@ export default function DateRangePicker({ start, end, blocked, onChange }: Props
         {DAYS.map((d, i) => <span key={i} className="py-1">{d}</span>)}
         {cells.map((iso, i) => {
           if (!iso) return <span key={i} />;
-          const past = iso < today;
-          const off = past || isBlocked(iso);
+          const off = iso < today || fullyBlocked(iso);
           const isStart = iso === start; const isEnd = iso === end;
           const inside = !!(start && end && iso > start && iso < end);
           const cls = isStart || isEnd ? 'bg-ink text-white' : inside ? 'bg-brand/25 text-ink' : off ? 'text-line line-through' : 'text-ink hover:bg-paper';
           return (
-            <button key={iso} type="button" disabled={off && !isEnd} onClick={() => pick(iso)}
+            <button key={iso} type="button" disabled={off} onClick={() => pick(iso)}
               aria-label={fromISO(iso).toLocaleDateString('fr-BE', { dateStyle: 'full' })} aria-pressed={isStart || isEnd}
-              className={`aspect-square rounded-lg text-sm transition-colors ${cls}`}>
+              className={`relative aspect-square rounded-lg text-sm transition-colors ${cls}`}>
               {Number(iso.slice(8))}
+              {!off && partlyBlocked(iso) && <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-brand" aria-hidden="true" />}
             </button>
           );
         })}
       </div>
-      <p className="mt-3 text-xs text-muted">Cliquez sur le jour de départ, puis sur le jour de retour.</p>
+      <p className="mt-3 text-xs text-muted">Choisissez le jour de départ puis le jour de retour. Un point vert = déjà loué une partie de la journée.</p>
     </div>
   );
 }

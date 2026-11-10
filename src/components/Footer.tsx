@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Logo from './Logo';
 import { whatsappGeneric } from '@/lib/whatsapp';
+import { siteConfig } from '@/config/site';
 
 export default function Footer() {
   return (
@@ -13,14 +14,17 @@ export default function Footer() {
         <nav className="text-sm" aria-label="Pages">
           <p className="label">Pages</p>
           <ul className="space-y-2 text-muted">
-            <li><Link href="/#voitures" className="hover:text-ink">Nos voitures</Link></li>
+            <li><Link href="/voitures" className="hover:text-ink">Nos voitures</Link></li>
             <li><Link href="/comment-ca-marche" className="hover:text-ink">Comment ça marche</Link></li>
             <li><Link href="/contact" className="hover:text-ink">Contact</Link></li>
           </ul>
         </nav>
         <div className="text-sm">
           <p className="label">Contact</p>
-          <a href={whatsappGeneric()} className="text-muted hover:text-ink">WhatsApp</a>
+          <ul className="space-y-2 text-muted">
+            <li><a href={whatsappGeneric()} className="hover:text-ink">WhatsApp</a></li>
+            <li><a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-ink">{siteConfig.contactEmail}</a></li>
+          </ul>
         </div>
       </div>
       <p className="border-t border-line py-5 text-center text-xs text-muted">© {new Date().getFullYear()} BNS Prestige</p>

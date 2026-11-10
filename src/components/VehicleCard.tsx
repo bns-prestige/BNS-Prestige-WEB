@@ -4,16 +4,23 @@ import { eur } from '@/lib/pricing';
 import CarImage from './CarImage';
 
 export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
+  const prices: [string, number | null][] = [['24 h', vehicle.daily_price], ['Week-end', vehicle.weekend_price], ['Semaine', vehicle.weekly_price]];
   return (
-    <Link href={`/vehicules/${vehicle.slug}`} className="card group block overflow-hidden transition-shadow hover:shadow-md">
-      <CarImage vehicle={vehicle} className="aspect-[16/10] w-full" />
-      <div className="flex items-end justify-between p-6">
-        <div>
-          <h3 className="font-display text-xl">{vehicle.name}</h3>
-          <p className="mt-1 text-sm text-muted">À partir de {eur(vehicle.daily_price)} / jour</p>
-        </div>
-        <span className="text-sm font-semibold group-hover:text-brand">Voir →</span>
+    <article className="card overflow-hidden md:grid md:grid-cols-[1.1fr_1fr]">
+      <Link href={`/vehicules/${vehicle.slug}`} aria-label={`Voir la ${vehicle.name}`}>
+        <CarImage vehicle={vehicle} className="aspect-[16/10] h-full w-full" />
+      </Link>
+      <div className="flex flex-col p-6 md:p-8">
+        <h2 className="text-2xl">{vehicle.name}</h2>
+        {vehicle.tagline && <p className="mt-1 text-sm text-muted">{vehicle.tagline}</p>}
+        <dl className="mt-6 grid grid-cols-3 gap-3 text-sm">
+          {prices.filter(([, p]) => p != null).map(([k, p]) => (
+            <div key={k}><dt className="label !mb-1">{k}</dt><dd className="font-display text-lg">{eur(p!)}</dd></div>
+          ))}
+        </dl>
+        <p className="mt-4 text-xs text-muted">Caution : {eur(vehicle.deposit)}</p>
+        <Link href={`/vehicules/${vehicle.slug}`} className="btn-dark mt-6 md:mt-auto">Voir et réserver</Link>
       </div>
-    </Link>
+    </article>
   );
 }

@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import type { BookingResult, DateRange, Vehicle } from '@/lib/types';
-import { createBookingRequest, getUnavailableRanges } from '@/lib/booking';
-import { diffDays, formatFR } from '@/lib/dates';
-import { estimatePrice, eur } from '@/lib/pricing';
+import type { BookingResult, Quote, Slot, Vehicle } from '@/lib/types';
+import { createBookingRequest, getUnavailableSlots, quoteBooking } from '@/lib/booking';
+import { formatDateTimeFR, formatShortFR, timeOptions } from '@/lib/dates';
+import { eur, hoursLabel } from '@/lib/pricing';
 import { buildWhatsAppLink, type Contact } from '@/lib/whatsapp';
 import { siteConfig } from '@/config/site';
 import DateRangePicker from './DateRangePicker';
@@ -14,10 +14,14 @@ const PHONE_RE = /^\+?[0-9 ./()-]{6,20}$/;
 
 export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
   const [step, setStep] = useState<Step>(1);
-  const [blocked, setBlocked] = useState<DateRange[]>([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
   const [loadError, setLoadError] = useState(false);
-  const [start, setStart] = useState<string | null>(null);
-  const [end, setEnd] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState(siteConfig.bookingHours.defaultTime);
+  const [endTime, setEndTime] = useState(siteConfig.bookingHours.defaultTime);
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const times = useMemo(() => timeOptions(), []);
   const [c, setC] = useState<Contact>({ firstName: '', lastName: '', email: '', phone: '' });
   const [payment, setPayment] = useState<'online' | 'on_site'>('on_site');
   const [notes, setNotes] = useState('');
@@ -25,11 +29,28 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ booking: BookingResult; link: string } | null>(null);
 
-  useEffect(() => { getUnavailableRanges(vehicle.slug).then(setBlocked).catch(() => setLoadError(true)); }, [vehicle.slug]);
+  useEffect(() => { getUnavailableSlots(vehicle.slug).then(setSlots).catch(() => setLoadError(true)); }, [vehicle.slug]);
 
-  const days = start && end ? diffDays(start, end) : 0;
-  const price = useMemo(() => (start && end ? estimatePrice(vehicle, start, end) : null), [vehicle, start, end]);
+  const start = startDate ? `${startDate}T${startTime}` : null;
+  const end = endDate ? `${endDate}T${endTime}` : null;
+  const hours = start && end ? (new Date(end).getTime() - new Date(start).getTime()) / 3600000 : 0;
+  const problem = !start || !end ? null
+    : new Date(start).getTime() <= Date.now() ? 'Le départ doit être dans le futur.'
+    : hours < 24 ? 'La durée minimale est de 24 h.'
+    : slots.some((sl) => start < sl.end_local && end > sl.start_local) ? 'Ces horaires chevauchent une location existante.'
+    : null;
+  const slotOk = !!start && !!end && !problem;
+
+  // Le prix vient de la base (une seule règle de calcul)
+  useEffect(() => {
+    setQuote(null);
+    if (!slotOk || !start || !end) return;
+    let cancelled = false;
+    quoteBooking(vehicle.slug, start, end).then((q) => { if (!cancelled) setQuote(q); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [slotOk, start, end, vehicle.slug]);
   const contactOk = c.firstName.trim() && c.lastName.trim() && EMAIL_RE.test(c.email.trim()) && PHONE_RE.test(c.phone.trim());
+  const pluralDays = (n: number) => `${n} jour${n > 1 ? 's' : ''} facturé${n > 1 ? 's' : ''}`;
 
   async function submit() {
     if (!start || !end) return;
@@ -42,7 +63,7 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
       window.open(link, '_blank', 'noopener'); // peut être bloqué par le navigateur : le bouton ci-dessous prend le relais
     } catch (e) {
       setError((e as Error).message);
-      getUnavailableRanges(vehicle.slug).then(setBlocked).catch(() => {});
+      getUnavailableSlots(vehicle.slug).then(setSlots).catch(() => {});
     } finally { setBusy(false); }
   }
 
@@ -55,7 +76,8 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
         <p className="mt-3 text-sm text-muted">Votre demande est enregistrée. Dernière étape : envoyez-nous le message sur WhatsApp pour que nous puissions vous contacter.</p>
         <dl className="mt-5 space-y-1 text-sm">
           <div className="flex justify-between"><dt className="text-muted">Véhicule</dt><dd>{b.vehicle}</dd></div>
-          <div className="flex justify-between"><dt className="text-muted">Dates</dt><dd>{formatFR(b.start_date)} → {formatFR(b.end_date)}</dd></div>
+          <div className="flex justify-between"><dt className="text-muted">Départ</dt><dd>{formatDateTimeFR(b.start_at)}</dd></div>
+          <div className="flex justify-between"><dt className="text-muted">Retour</dt><dd>{formatDateTimeFR(b.end_at)}</dd></div>
           <div className="flex justify-between"><dt className="text-muted">Prix estimé</dt><dd>{eur(b.estimated_price)}</dd></div>
         </dl>
         <a href={done.link} target="_blank" rel="noopener noreferrer" className="btn-green mt-6 w-full">Envoyer sur WhatsApp</a>
@@ -75,17 +97,35 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
       {step === 1 && (
         <div>
           {loadError && <p className="mb-3 text-sm text-red-600">Disponibilités indisponibles pour le moment. Réessayez ou écrivez-nous sur WhatsApp.</p>}
-          <DateRangePicker start={start} end={end} blocked={blocked} onChange={(s, e) => { setStart(s); setEnd(e); }} />
-          <div className="mt-5 rounded-xl bg-paper p-4 text-sm">
-            {price != null ? (
-              <div className="flex items-baseline justify-between">
-                <span className="text-muted">{days} jour{days > 1 ? 's' : ''} · estimation</span>
-                <span className="font-display text-xl">{eur(price)}</span>
+          <DateRangePicker start={startDate} end={endDate} slots={slots} onChange={(sd, ed) => { setStartDate(sd); setEndDate(ed); }} />
+          {startDate && (
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <div>
+                <label className="label" htmlFor="st">Heure de départ</label>
+                <select id="st" className="input" value={startTime} onChange={(e) => setStartTime(e.target.value)}>{times.map((t) => <option key={t}>{t}</option>)}</select>
               </div>
-            ) : <span className="text-muted">Sélectionnez vos dates pour voir le prix.</span>}
-            <p className="mt-2 text-xs text-muted">Caution : {eur(vehicle.deposit)}. Prix indicatif, confirmé par BNS.</p>
+              <div>
+                <label className="label" htmlFor="et">Heure de retour</label>
+                <select id="et" className="input" value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={!endDate}>{times.map((t) => <option key={t}>{t}</option>)}</select>
+              </div>
+            </div>
+          )}
+          <div className="mt-5 rounded-xl bg-paper p-4 text-sm" aria-live="polite">
+            {problem ? <p className="text-red-700">{problem}</p>
+              : start && end && quote ? (
+                <>
+                  <p className="text-muted">{formatShortFR(start)} → {formatShortFR(end)}</p>
+                  <div className="mt-2 flex items-baseline justify-between">
+                    <span className="text-muted">{hoursLabel(quote.hours)} · {pluralDays(quote.billed_days)}</span>
+                    <span className="font-display text-xl">{eur(quote.price)}</span>
+                  </div>
+                  {quote.pack === 'weekend' && <p className="mt-1 text-xs text-brand">Pack week-end appliqué</p>}
+                  {quote.pack === 'week' && <p className="mt-1 text-xs text-brand">Pack semaine appliqué</p>}
+                </>
+              ) : <span className="text-muted">{start && end ? 'Calcul du prix…' : 'Sélectionnez vos dates et heures pour voir le prix.'}</span>}
+            <p className="mt-2 text-xs text-muted">Caution : {eur(vehicle.deposit)}. Tarif par tranche de 24 h. Prix indicatif, confirmé par BNS.</p>
           </div>
-          <button type="button" className="btn-dark mt-5 w-full" disabled={!start || !end} onClick={() => setStep(2)}>Continuer</button>
+          <button type="button" className="btn-dark mt-5 w-full" disabled={!slotOk || !quote} onClick={() => setStep(2)}>Continuer</button>
         </div>
       )}
 
@@ -115,14 +155,14 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
         </div>
       )}
 
-      {step === 3 && start && end && price != null && (
+      {step === 3 && start && end && quote && (
         <div>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between"><dt className="text-muted">Véhicule</dt><dd>{vehicle.name}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted">Départ</dt><dd>{formatFR(start)}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted">Retour</dt><dd>{formatFR(end)}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted">Durée</dt><dd>{days} jour{days > 1 ? 's' : ''}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted">Prix estimé</dt><dd className="font-semibold">{eur(price)}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted">Départ</dt><dd>{formatDateTimeFR(start)}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted">Retour</dt><dd>{formatDateTimeFR(end)}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted">Durée</dt><dd>{hoursLabel(quote.hours)} ({pluralDays(quote.billed_days)})</dd></div>
+            <div className="flex justify-between"><dt className="text-muted">Prix estimé</dt><dd className="font-semibold">{eur(quote.price)}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">Caution</dt><dd>{eur(vehicle.deposit)}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">Client</dt><dd>{c.firstName} {c.lastName}</dd></div>
             <div className="flex justify-between"><dt className="text-muted">Paiement</dt><dd>{payment === 'on_site' ? 'Sur place' : 'En ligne'}</dd></div>

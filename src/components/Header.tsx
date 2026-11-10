@@ -3,7 +3,7 @@ import Logo from './Logo';
 
 const links = [
   { href: '/', label: 'Accueil' },
-  { href: '/#voitures', label: 'Nos voitures' },
+  { href: '/voitures', label: 'Nos voitures' },
   { href: '/comment-ca-marche', label: 'Comment ça marche' },
   { href: '/contact', label: 'Contact' },
 ];
@@ -16,7 +16,7 @@ export default function Header() {
         <nav className="hidden gap-7 text-sm text-muted md:flex" aria-label="Navigation principale">
           {links.map((l) => (<Link key={l.href} href={l.href} className="hover:text-ink">{l.label}</Link>))}
         </nav>
-        <Link href="/#voitures" className="btn-dark !py-2.5">Réserver</Link>
+        <Link href="/voitures" className="btn-dark !py-2.5">Réserver</Link>
       </div>
     </header>
   );

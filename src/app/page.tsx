@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { getVehicles } from '@/lib/vehicles';
-import VehicleCard from '@/components/VehicleCard';
 
 export const revalidate = 60;
 
@@ -21,14 +20,9 @@ export default async function Home() {
         <h1 className="mt-8 text-5xl leading-[1.05] sm:text-7xl">La performance <span className="text-brand">à votre portée.</span></h1>
         <p className="mx-auto mt-6 max-w-xl text-lg text-muted">Audi RS3 et Golf 8 GTI Clubsport. Choisissez vos dates, envoyez votre demande, nous confirmons par WhatsApp.</p>
         <div className="mt-9 flex flex-wrap justify-center gap-3">
-          <Link href="#voitures" className="btn-dark">Voir les voitures</Link>
+          <Link href="/voitures" className="btn-dark">Voir les voitures</Link>
           <Link href="/comment-ca-marche" className="btn-light">Comment ça marche</Link>
         </div>
-      </section>
-
-      <section id="voitures" className="mx-auto max-w-6xl scroll-mt-24 px-6" aria-labelledby="voitures-titre">
-        <h2 id="voitures-titre" className="mb-8 text-3xl">Nos voitures</h2>
-        <div className="grid gap-6 md:grid-cols-2">{vehicles.map((v) => <VehicleCard key={v.id} vehicle={v} />)}</div>
       </section>
 
       <section className="mx-auto mt-24 max-w-6xl px-6" aria-labelledby="steps-titre">
@@ -42,6 +36,12 @@ export default async function Home() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="mx-auto mt-20 max-w-3xl px-6 text-center">
+        <h2 className="text-3xl">Prêt à rouler ?</h2>
+        <p className="mt-3 text-muted">Choisissez votre voiture, vos dates et vos heures.</p>
+        <Link href="/voitures" className="btn-dark mt-6">Voir nos voitures</Link>
       </section>
     </>
   );

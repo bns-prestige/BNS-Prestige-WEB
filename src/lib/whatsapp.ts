@@ -1,7 +1,7 @@
 import { siteConfig } from '@/config/site';
 import type { BookingResult } from './types';
-import { formatFR } from './dates';
-import { eur } from './pricing';
+import { formatDateTimeFR } from './dates';
+import { eur, hoursLabel } from './pricing';
 
 export type Contact = { firstName: string; lastName: string; email: string; phone: string };
 
@@ -12,9 +12,9 @@ export function buildWhatsAppLink(b: BookingResult, c: Contact): string {
     '',
     `Référence : ${b.reference}`,
     `Véhicule : ${b.vehicle}`,
-    `Date de départ : ${formatFR(b.start_date)}`,
-    `Date de retour : ${formatFR(b.end_date)}`,
-    `Durée : ${b.days} jour${b.days > 1 ? 's' : ''}`,
+    `Départ : ${formatDateTimeFR(b.start_at)}`,
+    `Retour : ${formatDateTimeFR(b.end_at)}`,
+    `Durée : ${hoursLabel(b.hours)} (${b.billed_days} jour${b.billed_days > 1 ? 's' : ''} facturé${b.billed_days > 1 ? 's' : ''})`,
     `Prix estimé : ${eur(b.estimated_price)}`,
     '',
     `Nom : ${c.firstName} ${c.lastName}`,
