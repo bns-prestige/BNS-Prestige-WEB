@@ -1,15 +1,13 @@
 import Link from 'next/link';
 import type { Vehicle } from '@/lib/types';
 import { eur } from '@/lib/pricing';
-import CarImage from './CarImage';
+import Gallery from './Gallery';
 
 export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   const prices: [string, number | null][] = [['24 h', vehicle.daily_price], ['Week-end', vehicle.weekend_price], ['Semaine', vehicle.weekly_price]];
   return (
-    <article className="card overflow-hidden md:grid md:grid-cols-[1.1fr_1fr]">
-      <Link href={`/vehicules/${vehicle.slug}`} aria-label={`Voir la ${vehicle.name}`}>
-        <CarImage vehicle={vehicle} className="aspect-[16/10] h-full w-full" />
-      </Link>
+    <article className="card overflow-hidden md:grid md:grid-cols-[1.2fr_1fr]">
+      <Gallery images={vehicle.images ?? []} name={vehicle.name} />
       <div className="flex flex-col p-6 md:p-8">
         <h2 className="text-2xl">{vehicle.name}</h2>
         {vehicle.tagline && <p className="mt-1 text-sm text-muted">{vehicle.tagline}</p>}

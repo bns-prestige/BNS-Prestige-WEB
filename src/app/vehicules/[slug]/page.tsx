@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { getVehicle } from '@/lib/vehicles';
 import { eur } from '@/lib/pricing';
 import BookingForm from '@/components/BookingForm';
-import CarImage from '@/components/CarImage';
+import Gallery from '@/components/Gallery';
 
 export const revalidate = 60;
 type Props = { params: Promise<{ slug: string }> };
@@ -25,7 +25,7 @@ export default async function VehiclePage({ params }: Props) {
       {v.tagline && <p className="mt-3 text-muted">{v.tagline}</p>}
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_400px]">
         <div>
-          <div className="card overflow-hidden"><CarImage vehicle={v} className="aspect-[16/10] w-full" /></div>
+          <div className="card overflow-hidden"><Gallery images={v.images ?? []} name={v.name} /></div>
           {v.description && <p className="mt-6 text-muted">{v.description}</p>}
           {specs.length > 0 && (
             <dl className="mt-6 grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
