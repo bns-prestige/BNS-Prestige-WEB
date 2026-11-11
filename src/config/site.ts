@@ -5,9 +5,9 @@ export const siteConfig = {
   contactEmail: 'contact@bnsprestige.be',
   // Réseaux sociaux
   socials: [
-    { label: 'Instagram', url: 'https://www.instagram.com/bnsprestige/' },
-    { label: 'TikTok', url: 'https://www.tiktok.com/@bnsprestige' },
-    { label: 'Snapchat', url: 'https://www.snapchat.com/@bnsprestige' },
+    { label: 'Instagram', icon: 'instagram' as const, url: 'https://www.instagram.com/bnsprestige/' },
+    { label: 'TikTok', icon: 'tiktok' as const, url: 'https://www.tiktok.com/@bnsprestige' },
+    { label: 'Snapchat', icon: 'snapchat' as const, url: 'https://www.snapchat.com/@bnsprestige' },
   ],
   // Numéro WhatsApp Business, format international sans espaces ni "+".
   whatsappNumber: '212631967717',
