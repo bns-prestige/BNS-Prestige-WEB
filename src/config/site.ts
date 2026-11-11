@@ -3,6 +3,12 @@ export const siteConfig = {
   name: 'BNS Prestige',
   tagline: 'Location de voitures sportives · Bruxelles',
   contactEmail: 'contact@bnsprestige.be',
+  // Réseaux sociaux
+  socials: [
+    { label: 'Instagram', url: 'https://www.instagram.com/bnsprestige/' },
+    { label: 'TikTok', url: 'https://www.tiktok.com/@bnsprestige' },
+    { label: 'Snapchat', url: 'https://www.snapchat.com/@bnsprestige' },
+  ],
   // Numéro WhatsApp Business, format international sans espaces ni "+".
   whatsappNumber: '212631967717',
   // Heures de départ / retour proposées au client (heure de Bruxelles).

@@ -22,8 +22,9 @@ export default function Footer() {
         <div className="text-sm">
           <p className="label">Contact</p>
           <ul className="space-y-2 text-muted">
-            <li><a href={whatsappGeneric()} className="hover:text-ink">WhatsApp</a></li>
+            <li><a href={whatsappGeneric()} target="_blank" rel="noopener noreferrer" className="hover:text-ink">WhatsApp</a></li>
             <li><a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-ink">{siteConfig.contactEmail}</a></li>
+            {siteConfig.socials.map((s) => (<li key={s.label}><a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-ink">{s.label}</a></li>))}
           </ul>
         </div>
       </div>
