@@ -17,6 +17,7 @@ export default function Footer() {
           <ul className="space-y-2 text-muted">
             <li><Link href="/voitures" className="hover:text-ink">Nos voitures</Link></li>
             <li><Link href="/comment-ca-marche" className="hover:text-ink">Comment ça marche</Link></li>
+            <li><Link href="/conditions-location" className="hover:text-ink">Conditions de location</Link></li>
             <li><Link href="/contact" className="hover:text-ink">Contact</Link></li>
           </ul>
         </nav>
