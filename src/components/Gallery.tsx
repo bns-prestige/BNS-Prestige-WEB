@@ -1,7 +1,7 @@
 'use client';
 import { useRef, useState } from 'react';
 
-// Une photo principale + miniatures en dessous. Flèches, clavier et balayage (swipe) sur téléphone.
+// Photo principale avec navigation par flèches et balayage sur téléphone.
 export default function Gallery({ images, name }: { images: string[]; name: string }) {
   const [i, setI] = useState(0);
   const startX = useRef<number | null>(null);
@@ -26,17 +26,6 @@ export default function Gallery({ images, name }: { images: string[]; name: stri
           </>
         )}
       </div>
-      {n > 1 && (
-        <div className="flex gap-2 p-3">
-          {images.map((src, k) => (
-            <button key={src} type="button" onClick={() => setI(k)} aria-label={`Voir la photo ${k + 1}`} aria-current={k === i}
-              className={`aspect-[16/10] w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${k === i ? 'border-ink' : 'border-transparent opacity-70 hover:opacity-100'}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
