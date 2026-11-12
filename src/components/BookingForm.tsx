@@ -138,6 +138,7 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
                   </div>
                   {quote.pack === 'weekend' && <p className="mt-1 text-xs text-brand">Pack week-end appliqué</p>}
                   {quote.pack === 'week' && <p className="mt-1 text-xs text-brand">Pack semaine appliqué</p>}
+                  {quote.pack === 'month' && <p className="mt-1 text-xs text-brand">Pack mensuel appliqué (30 ou 31 jours)</p>}
                 </>
               )  : <span className="text-muted">{quoteError ?? (start && end ? (slotsLoaded ? 'Calcul du prix…' : 'Vérification des disponibilités…') : 'Sélectionnez vos dates et heures pour voir le prix.')}</span>}
             <p className="mt-2 text-xs text-muted">Caution : {eur(vehicle.deposit)}. Tarif par tranche de 24 h. Prix indicatif, confirmé par BNS.</p>
