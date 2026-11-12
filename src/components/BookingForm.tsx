@@ -16,11 +16,13 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
   const [step, setStep] = useState<Step>(1);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadError, setLoadError] = useState(false);
+  const [slotsLoaded, setSlotsLoaded] = useState(false);
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [startTime, setStartTime] = useState(siteConfig.bookingHours.defaultTime);
   const [endTime, setEndTime] = useState(siteConfig.bookingHours.defaultTime);
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
   const times = useMemo(() => timeOptions(), []);
   const [c, setC] = useState<Contact>({ firstName: '', lastName: '', email: '', phone: '' });
   const [payment, setPayment] = useState<'online' | 'on_site'>('on_site');
@@ -29,7 +31,14 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ booking: BookingResult; link: string } | null>(null);
 
-  useEffect(() => { getUnavailableSlots(vehicle.slug).then(setSlots).catch(() => setLoadError(true)); }, [vehicle.slug]);
+  useEffect(() => {
+    let cancelled = false;
+    getUnavailableSlots(vehicle.slug)
+      .then((data) => { if (!cancelled) { setSlots(data); setLoadError(false); } })
+      .catch(() => { if (!cancelled) setLoadError(true); })
+      .finally(() => { if (!cancelled) setSlotsLoaded(true); });
+    return () => { cancelled = true; };
+  }, [vehicle.slug]);
 
   const start = startDate ? `${startDate}T${startTime}` : null;
   const end = endDate ? `${endDate}T${endTime}` : null;
@@ -44,11 +53,18 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
   // Le prix vient de la base (une seule règle de calcul)
   useEffect(() => {
     setQuote(null);
-    if (!slotOk || !start || !end) return;
+    setQuoteError(null);
+    if (!slotOk || !slotsLoaded || !start || !end) return;
     let cancelled = false;
-    quoteBooking(vehicle.slug, start, end).then((q) => { if (!cancelled) setQuote(q); }).catch(() => {});
+    quoteBooking(vehicle.slug, start, end)
+      .then((q) => {
+        if (cancelled) return;
+        if (!q) setQuoteError("Le tarif n'a pas pu être calculé. Réessayez ou contactez-nous.");
+        else setQuote(q);
+      })
+      .catch(() => { if (!cancelled) setQuoteError("Le calcul du prix est momentanément indisponible. Réessayez dans quelques instants."); });
     return () => { cancelled = true; };
-  }, [slotOk, start, end, vehicle.slug]);
+  }, [slotOk, slotsLoaded, start, end, vehicle.slug]);
   const contactOk = c.firstName.trim() && c.lastName.trim() && EMAIL_RE.test(c.email.trim()) && PHONE_RE.test(c.phone.trim());
   const pluralDays = (n: number) => `${n} jour${n > 1 ? 's' : ''} facturé${n > 1 ? 's' : ''}`;
 
@@ -96,7 +112,8 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
 
       {step === 1 && (
         <div>
-          {loadError && <p className="mb-3 text-sm text-red-600">Disponibilités indisponibles pour le moment. Réessayez ou écrivez-nous sur WhatsApp.</p>}
+          {loadError && <p className="mb-3 text-sm text-red-600" role="alert">Impossible de vérifier les disponibilités. Rechargez la page ou contactez-nous sur WhatsApp avant de poursuivre.</p>}
+          {!slotsLoaded && <p className="mb-3 text-sm text-muted" role="status">Vérification des disponibilités…</p>}
           <DateRangePicker start={startDate} end={endDate} slots={slots} onChange={(sd, ed) => { setStartDate(sd); setEndDate(ed); }} />
           {startDate && (
             <div className="mt-5 grid grid-cols-2 gap-3">
@@ -122,10 +139,10 @@ export default function BookingForm({ vehicle }: { vehicle: Vehicle }) {
                   {quote.pack === 'weekend' && <p className="mt-1 text-xs text-brand">Pack week-end appliqué</p>}
                   {quote.pack === 'week' && <p className="mt-1 text-xs text-brand">Pack semaine appliqué</p>}
                 </>
-              ) : <span className="text-muted">{start && end ? 'Calcul du prix…' : 'Sélectionnez vos dates et heures pour voir le prix.'}</span>}
+              )  : <span className="text-muted">{quoteError ?? (start && end ? (slotsLoaded ? 'Calcul du prix…' : 'Vérification des disponibilités…') : 'Sélectionnez vos dates et heures pour voir le prix.')}</span>}
             <p className="mt-2 text-xs text-muted">Caution : {eur(vehicle.deposit)}. Tarif par tranche de 24 h. Prix indicatif, confirmé par BNS.</p>
           </div>
-          <button type="button" className="btn-dark mt-5 w-full" disabled={!slotOk || !quote} onClick={() => setStep(2)}>Continuer</button>
+          <button type="button" className="btn-dark mt-5 w-full" disabled={!slotsLoaded || loadError || !slotOk || !quote} onClick={() => setStep(2)}>Continuer</button>
         </div>
       )}
 
