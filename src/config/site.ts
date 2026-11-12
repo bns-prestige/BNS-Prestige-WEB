@@ -15,5 +15,5 @@ export const siteConfig = {
   bookingHours: { open: 8, close: 22, stepMinutes: 30, defaultTime: '10:00' },
   // Paiement en ligne : passer à true quand Stripe (ou autre) sera réellement branché.
   onlinePaymentEnabled: false,
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bnsprestige.be',
 };
