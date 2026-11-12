@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
   title: { default: 'BNS Prestige — Location de voitures sportives à Bruxelles', template: '%s · BNS Prestige' },
   description: 'Louez une Audi RS3 Sportback ou une Volkswagen Golf 8 R à Bruxelles. Choisissez vos dates et envoyez votre demande de réservation.',
-  openGraph: { title: 'BNS Prestige', description: 'Location de voitures sportives à Bruxelles.', type: 'website', locale: 'fr_BE' },
+  openGraph: { title: 'BNS Prestige — Location de voitures sportives à Bruxelles', description: 'Location de l’Audi RS3 Sportback et de la Volkswagen Golf 8 R à Bruxelles. Consultez les véhicules et envoyez votre demande.', type: 'website', locale: 'fr_BE', siteName: 'BNS Prestige', url: siteConfig.siteUrl },
+  twitter: { card: 'summary_large_image', title: 'BNS Prestige — Location de voitures sportives à Bruxelles', description: 'Audi RS3 Sportback et Volkswagen Golf 8 R à louer à Bruxelles.' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
