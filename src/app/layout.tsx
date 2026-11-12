@@ -8,7 +8,7 @@ import WhatsAppFab from '@/components/WhatsAppFab';
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
   title: { default: 'BNS Prestige — Location de voitures sportives à Bruxelles', template: '%s · BNS Prestige' },
-  description: 'Louez une Audi RS3 ou une Golf 8 GTI Clubsport à Bruxelles. Choisissez vos dates, envoyez votre demande, confirmation par WhatsApp.',
+  description: 'Louez une Audi RS3 Sportback ou une Volkswagen Golf 8 R à Bruxelles. Choisissez vos dates et envoyez votre demande de réservation.',
   openGraph: { title: 'BNS Prestige', description: 'Location de voitures sportives à Bruxelles.', type: 'website', locale: 'fr_BE' },
 };
 
