@@ -7,6 +7,7 @@ const links = [
   { href: '/', label: 'Accueil' },
   { href: '/voitures', label: 'Nos voitures' },
   { href: '/comment-ca-marche', label: 'Comment ça marche' },
+  { href: '/conditions-location', label: 'Conditions de location' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -17,7 +18,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-line bg-white/95 px-5 py-3 backdrop-blur">
         <Logo />
         <nav className="hidden gap-7 text-sm text-muted md:flex" aria-label="Navigation principale">
-          {links.map((l) => <Link key={l.href} href={l.href} className="hover:text-ink">{l.label}</Link>)}
+          {links.map((l) => <Link key={l.href} href={l.href} className="transition-colors hover:text-ink">{l.label}</Link>)}
         </nav>
         <div className="flex items-center gap-2">
           <Link href="/voitures" className="btn-dark !py-2.5">Réserver</Link>
