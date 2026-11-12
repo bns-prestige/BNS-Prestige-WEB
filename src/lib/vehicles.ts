@@ -12,6 +12,7 @@ const map = (r: any): Vehicle => {
     daily_price: Number(r.daily_price),
     weekend_price: num(r.weekend_price),
     weekly_price: num(r.weekly_price),
+    monthly_price: num(r.monthly_price),
     deposit: Number(r.deposit),
   };
 };
