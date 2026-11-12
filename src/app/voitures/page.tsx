@@ -5,7 +5,7 @@ import VehicleCard from '@/components/VehicleCard';
 export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Nos voitures',
-  description: 'Audi RS3 et Golf 8 GTI Clubsport à louer à Bruxelles. Tarifs 24 h, week-end et semaine.',
+  description: 'Audi RS3 Sportback et Volkswagen Golf 8 R à louer à Bruxelles. Consultez les tarifs 24 h, week-end et semaine.',
 };
 
 export default async function VoituresPage() {
