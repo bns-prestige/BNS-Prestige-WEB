@@ -18,7 +18,7 @@ export default async function Home() {
           <span className="h-2 w-2 rounded-full bg-brand" />{vehicles.length} voitures disponibles · Bruxelles
         </p>
         <h1 className="mt-8 text-5xl leading-[1.05] sm:text-7xl">La performance <span className="text-brand">à votre portée.</span></h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg text-muted">Audi RS3 et Golf 8 GTI Clubsport. Choisissez vos dates, envoyez votre demande, nous confirmons par WhatsApp.</p>
+        <p className="mx-auto mt-6 max-w-xl text-lg text-muted">Audi RS3 Sportback et Volkswagen Golf 8 R. Choisissez vos dates, envoyez votre demande, nous vous répondons pour la confirmer.</p>
         <div className="mt-9 flex flex-wrap justify-center gap-3">
           <Link href="/voitures" className="btn-dark">Voir les voitures</Link>
           <Link href="/comment-ca-marche" className="btn-light">Comment ça marche</Link>
